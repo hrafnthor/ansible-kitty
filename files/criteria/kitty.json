@@ -1,0 +1,97 @@
+{
+    "title": "kitty",
+    "description": "schema for 'kitty' installation",
+    "type": "object",
+    "properties":
+    {
+        "remove":
+        {
+            "description": "Indicates if all kitty versions should be removed",
+            "type": "boolean"
+        },
+        "trim":
+        {
+            "description": "Indicates that all kitty versions present on the system that don't match requested versions will be removed",
+            "type": "boolean"
+        },
+        "default":
+        {
+            "type": "object",
+            "properties":
+            {
+                "remove":
+                {
+                    "description": "Indicates that the path addition of the default version should be removed. Consequently also removes the desktop entry.",
+                    "type": "boolean"
+                },
+                "version":
+                {
+                    "description": "Indicates which version should be default and added to path",
+                    "$ref": "#/definitions/non-empty-string"
+                },
+                "desktop":
+                {
+                    "description": "Indicates that a desktop entry should be added. The default version will be used",
+                    "type": "object",
+                    "properties":
+                    {
+                        "keywords":
+                        {
+                            "description": "List of keywords that will be added to the desktop entry",
+                            "$ref": "#/definitions/non-empty-string-array"
+                        },
+                        "force":
+                        {
+                            "description": "Indicates if a desktop entry should be created if one already exists",
+                            "type": "boolean"
+                        },
+                        "remove":
+                        {
+                            "description": "Indicates if the desktop entry should be removed",
+                            "type": "boolean"
+                        }
+                    }
+                }
+            },
+            "required":
+            [
+                "version"
+            ]
+        },
+        "stable":
+        {
+            "description": "The stable release version of Kitty to install",
+            "type": "object",
+            "properties":
+            {
+                "version":
+                {
+                    "$ref": "#/definitions/non-empty-string"
+                }
+            },
+            "required": ["version"]
+        },
+        "nightly":
+        {
+            "description": "Indicates that the latest nightly version should be installed",
+            "type": "boolean"
+        }
+    },
+    "definitions":
+    {
+        "non-empty-string":
+        {
+            "type": "string",
+            "minLength": 1
+        },
+        "non-empty-string-array":
+        {
+            "type": "array",
+            "minItems": 1,
+            "items":
+            {
+                "$ref": "#/definitions/non-empty-string"
+            }
+        }
+    }
+}

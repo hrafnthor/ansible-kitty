@@ -1,0 +1,14 @@
+- name: "HTH | Kitty | Remove desktop entry"
+  ansible.builtin.file:
+    path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    state: absent
+
+- name: "HTH | Kitty | Remove version from path"
+  ansible.builtin.file:
+    path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+    state: absent
+
+- name: "HTH | Kitty | Remove package location"
+  ansible.builtin.file:
+    path: "{{ hth_default_kitty_linux_installation_path }}"
+    state: absent

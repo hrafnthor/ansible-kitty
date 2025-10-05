@@ -1,0 +1,33 @@
+# The url returning back the latest version number for Kitty
+hth_default_kitty_latest_version_url: "https://sw.kovidgoyal.net/kitty/current-version.txt"
+
+# The default location to where kitty will be installed.
+hth_default_kitty_linux_installation_path: "/opt/kitty"
+
+# The default location where a symlink to the default version will be added.
+hth_default_kitty_linux_symlink_path: "/usr/bin"
+
+# The default location where a desktop entry will be added
+hth_default_kitty_linux_desktop_entry_path: "/usr/share/applications"
+
+# The owner of the default version symlink
+hth_kitty_default_linux_desktop_entry_group: "root"
+
+# the group owner of the default version symlink
+hth_kitty_default_linux_symlink_path_group: "root"
+
+# The default owner for the kitty installation path and executable
+hth_kitty_default_linux_installation_owner: "root"
+
+# The default group for the kitty installation path and executable
+hth_kitty_default_linux_installation_group: "root"
+
+# the default owner for the kitty desktop entry
+hth_kitty_default_linux_desktop_entry_owner: "root"
+
+# The default group for the kitty desktop entry
+hth_kitty_default_linux_desktop_entry_group: "root"
+
+# Default mapping of linux architectures to kitty artifact types
+hth_kitty_default_os_linux_architecture_map:
+  x86_64: ["x86_64", "amd64"]

@@ -1,0 +1,17 @@
+galaxy_info:
+  author: Hrafn Thorvaldsson
+  description: A role for managing installation of 'kitty' (https://sw.kovidgoyal.net/kitty)
+  company: hth
+
+  license: Apache2
+
+  min_ansible_version: 2.1
+
+  platforms:
+    - name: Ubuntu
+
+  galaxy_tags:
+    - terminal
+    - kitty
+
+dependencies: []

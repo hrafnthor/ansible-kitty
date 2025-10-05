@@ -1,0 +1,9 @@
+- name: "HTH | Kitty | Extract for Linux"
+  ansible.builtin.include_tasks: linux.yml
+  when:
+    - ansible_system == 'Linux'
+
+- name: "HTH | Kitty | Extract for Darwin"
+  ansible.builtin.include_tasks: darwin.yml
+  when:
+    - ansible_system == 'Darwin'

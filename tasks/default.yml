@@ -1,0 +1,108 @@
+- name: "HTH | Kitty | Set default version executable path"
+  ansible.builtin.set_fact:
+    kitty_default_version_path: "{{ hth_default_kitty_linux_installation_path }}/{{ version }}"
+
+- name: "HTH | Kitty | Set default version executable path"
+  ansible.builtin.set_fact:
+    kitty_default_version_executable_path: "{{ kitty_default_version_path }}/bin/kitty"
+
+- name: "HTH | Kitty | Stat default version executable"
+  ansible.builtin.stat:
+    path:  "{{ kitty_default_version_executable_path }}"
+  register: kitty_default_version_executable
+
+- name: "HTH | Kitty | Assert version executable exists"
+  ansible.builtin.fail:
+    msg: "Was unable to find executable at '{{ kitty_default_version_executable_path }}'!"
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - not kitty_default_version_executable.stat.exists
+
+- name: "HTH | Kitty | Add version to path"
+  ansible.builtin.file:
+    src: "{{ kitty_default_version_executable_path }}"
+    dest: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+    owner: "{{ hth_kitty_default_linux_desktop_entry_group }}"
+    group: "{{ hth_kitty_default_linux_symlink_path_group }}"
+    mode: 0755
+    state: link
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+
+- name: "HTH | Kitty | Remove version from path"
+  ansible.builtin.file:
+    path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+    state: absent
+  when:
+    - kitty.default.remove is defined
+    - kitty.default.remove
+
+- name: "HTH | Kitty | Set desktop entry path"
+  ansible.builtin.set_fact:
+    kitty_desktop_entry_path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - kitty.default.desktop is defined
+    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+
+- name: "HTH | Kitty | Stat desktop entry"
+  ansible.builtin.stat:
+    path:  "{{ kitty_desktop_entry_path }}"
+  register: kitty_desktop_entry
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - kitty.default.desktop is defined
+    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+
+- name: "HTH | Kitty | Add desktop entry"
+  ansible.builtin.copy:
+    src: "{{ kitty_default_version_path }}/share/applications/kitty.desktop"
+    dest: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    owner: "{{ hth_kitty_default_linux_desktop_entry_owner }}"
+    group: "{{ hth_kitty_default_linux_desktop_entry_group }}"
+    mode: 0644
+  register: kitty_desktop
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - kitty.default.desktop is defined
+    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+    - not kitty_desktop_entry.stat.exists or (kitty.default.desktop.force is defined and kitty.default.desktop.force)
+
+- name: "HTH | Kitty | Set desktop entry icon"
+  ansible.builtin.lineinfile:
+    path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    regexp: "^Icon="
+    line: "Icon={{ kitty_default_version_path }}/share/icons/hicolor/scalable/apps/kitty.svg"
+  register: kitty_desktop_icon
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - kitty.default.desktop is defined
+    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+
+- name: "HTH | Kitty | Set desktop entry keywords"
+  ansible.builtin.lineinfile:
+    path:  "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    regexp: "^Keywords="
+    line: "Keywords={{ kitty.default.desktop.keywords | join(';') }}"
+  register: kitty_desktop_keywords
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - kitty.default.desktop is defined
+    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+    - kitty.default.desktop.keywords is defined
+
+- name: "HTH | Kitty | Validate desktop entry"
+  ansible.builtin.shell:
+    cmd: "desktop-file-validate {{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - kitty.default.desktop is defined
+    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+    - kitty_desktop.changed or kitty_desktop_icon.changed or kitty_desktop_keywords.changed
+
+- name: "HTH | Kitty | Remove desktop entry"
+  ansible.builtin.file:
+    path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    state: absent
+  when:
+    - (kitty.default.remove is defined and kitty.default.remove) or (kitty.default.desktop is defined and kitty.default.desktop.remove is defined and kitty.default.desktop.remove)
