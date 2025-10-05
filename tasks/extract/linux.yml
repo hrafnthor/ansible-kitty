@@ -1,0 +1,19 @@
+- name: "HTH | Kitty | Linux | Ensure extraction path"
+  ansible.builtin.file:
+    path: "{{ kitty_version_path }}"
+    owner: "{{ hth_kitty_default_linux_installation_owner }}"
+    group: "{{ hth_kitty_default_linux_installation_group }}"
+    modification_time: preserve
+    access_time: preserve
+    state: directory
+    mode: 0755
+    recurse: true
+
+- name: "HTH | Kitty | Linux | Extract archive"
+  ansible.builtin.unarchive:
+    src: "{{ kitty_archive_download_path }}"
+    dest: "{{ kitty_version_path }}/"
+    owner: "{{ hth_kitty_default_linux_installation_owner }}"
+    group: "{{ hth_kitty_default_linux_installation_group }}"
+    remote_src: yes
+    mode: 0755

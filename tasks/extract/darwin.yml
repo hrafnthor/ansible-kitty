@@ -1,0 +1,25 @@
+- block:
+
+  - name: "HTH | Kitty | Darwin | Mount archive"
+    ansible.builtin.command: "hdiutil attach {{ kitty_archive_download_path}}"
+    register: kitty_dmg_mount
+
+  - name: "HTH | Kitty | Darwin | Set destination path"
+    ansible.builtin.set_fact:
+      hth_kitty_destination_path: "/Applications/Kitty.app"
+
+  - name: "HTH | Kitty | Darwin | Ensure destination"
+    ansible.builtin.file:
+      path: "{{ hth_kitty_destination_path }}"
+      status: directory
+
+  - name: "HTH | Kitty | Darwin | Extract application"
+    ansible.builtin.copy:
+      src: "/Volumes/Kitty/Kitty.app"
+      dest: "{{ hth_kitty_destination_path }}"
+      remote_src: yes
+
+  always:
+
+  - name: "HTH | Kitty | Darwin | Unmount archive"
+    command: hdiutil detach "/Volumes/Kitty"

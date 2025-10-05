@@ -1,0 +1,15 @@
+# Retrieves a list of all directories in the installation directory that do not
+# correspond to version numbers defined in task input, nor default directory.
+- name: "HTH | Kitty | Find undefined versions"
+  ansible.builtin.find:
+    paths: "{{ hth_default_kitty_linux_installation_path }}"
+    file_type: directory
+    excludes: "{{ versions + ['default'] }}"
+  register: kitty_trim_path_directories
+
+# Removes all directories from previously generated list that are not links
+- name: "HTH | Kitty | Remove undefined version"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ kitty_trim_path_directories.files | selectattr('islnk', 'defined') | selectattr('islnk', 'equalto', False)  | map(attribute='path') | list }}"
