@@ -1,0 +1,50 @@
+name: quality-gate
+
+on:
+  # allow manual triggering of action
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - "main"
+
+  push:
+    tags:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: "molecule | install"
+      run: |
+        pip install -U pip setuptools wheel
+        pip install ansible ansible-lint molecule molecule-plugins[docker]
+
+    - name: "molecule | test install of 'latest'"
+      run: molecule  test --scenario-name install-latest -- -vv
+
+    - name: "molecule | test install of nightly version"
+      run: molecule  test --scenario-name install-nightly -- -vv
+
+    - name: "molecule | test install of specific version"
+      run: molecule  test --scenario-name install-version -- -vv
+
+    - name: "molecule | test install of multiple versions"
+      run: molecule  test --scenario-name install-multiple-versions -- -vv
+
+    - name: "molecule | test trim of undefined versions"
+      run: molecule  test --scenario-name trim-versions -- -vv
+
+    - name: "molecule | test removal of version"
+      run: molecule  test --scenario-name remove-version -- -vv
+
+    - name: "molecule | test remove package"
+      run: molecule  test --scenario-name remove -- -vv
