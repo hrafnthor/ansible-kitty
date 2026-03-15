@@ -1,0 +1,11 @@
+kitty:
+  releases:
+    - version: "nightly"
+  default:
+    version: "nightly"
+    desktop:
+      keywords:
+        - tty
+        - shell
+        - terminal
+        - emulator

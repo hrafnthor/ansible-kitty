@@ -1,0 +1,37 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+
+  - name: Load role input variables
+    include_vars:
+      file: "input-vars.yml"
+
+  - name: Load role defaults
+    include_vars:
+      file: "../../defaults/main.yml"
+
+  - name: Extract version from input data
+    set_fact:
+      kitty_version: "{{ kitty.releases | map(attribute='version') | first }}"
+
+  - name: Check for version install dir presence
+    stat:
+      path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_version }}/bin/kitty"
+    register: kitty_version_dir_stat
+
+  - name: List directories in installation path
+    ansible.builtin.find:
+      paths: "{{ hth_default_kitty_linux_installation_path }}"
+      file_type: directory
+    register: kitty_installation_dirs
+
+  - name: Fail when more than one version directory exists
+    fail:
+      msg: "More than one version directory was found!"
+    when: kitty_installation_dirs.files | length > 1
+
+  - name: Fail when version install path is not found
+    fail:
+      msg: "Install directory for version '{{ kitty_version }}' was not found!"
+    when: not kitty_version_dir_stat.stat.exists

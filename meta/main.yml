@@ -3,9 +3,14 @@ galaxy_info:
   description: A role for managing installation of 'kitty' (https://sw.kovidgoyal.net/kitty)
   company: hth
 
+  role_name: kitty
+  namespace: hth
+
   license: Apache2
 
   min_ansible_version: 2.1
+
+
 
   platforms:
     - name: Ubuntu

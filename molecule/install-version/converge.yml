@@ -1,0 +1,10 @@
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: Load input variables
+      include_vars:
+        file: "input-vars.yml"
+  roles:
+  - role: hth.kitty

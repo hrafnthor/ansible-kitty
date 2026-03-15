@@ -1,0 +1,4 @@
+ kitty:
+    trim: true
+    releases:
+      - version: "0.46.0"

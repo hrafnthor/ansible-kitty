@@ -1,0 +1,56 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+
+  - name: Load role input variables
+    include_vars:
+      file: "input-vars.yml"
+
+  - name: Load role defaults
+    include_vars:
+      file: "../../defaults/main.yml"
+
+  - name: Extract version to remove from input data
+    set_fact:
+      kitty_version: "{{ kitty.releases | selectattr('remove', 'defined') | selectattr('remove', 'equalto', true) | map(attribute='version') | first }}"
+
+  - name: Check for version install dir presence
+    stat:
+      path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_version }}/bin/kitty"
+    register: kitty_version_dir_stat
+
+  - name: Check for kitty symlink presence
+    stat:
+      path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+    register: kitty_symlink_stat
+
+  - name: Check for kitten symlink presence
+    stat:
+      path: "{{ hth_default_kitty_linux_symlink_path }}/kitten"
+    register: kitty_kitten_symlink_stat
+
+  - name: Check for desktop file presence
+    stat:
+      path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    register: kitty_desktop_stat
+
+  - name: Fail when version install path is found
+    fail:
+      msg: "Install directory for removed version '{{ kitty_version }}' was found!"
+    when: kitty_version_dir_stat.stat.exists
+
+  - name: Fail when kitty is found on path
+    fail:
+      msg: "Version '{{ kitty_version }}' of kitty was found on path!"
+    when: kitty_symlink_stat.stat.exists
+
+  - name: Fail when kitten is found on path
+    fail:
+      msg: "Version '{{ kitty_version }}' of kitten was found on path!"
+    when: kitty_kitten_symlink_stat.stat.exists
+
+  - name: Fail when desktop entry is found
+    fail:
+      msg: "Desktop entry not found for version!"
+    when: kitty_desktop_stat.stat.exists

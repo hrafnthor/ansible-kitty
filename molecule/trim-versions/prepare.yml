@@ -1,0 +1,11 @@
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+  - role: hth.kitty
+    vars:
+      kitty:
+        releases:
+          - version: "0.43.0"
+          - version: "0.46.0"

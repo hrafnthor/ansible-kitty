@@ -1,0 +1,49 @@
+- name: "HTH | Kitty | Validate management step input parameter"
+  ansible.builtin.fail:
+    msg: "Management step requires variable 'client' to be present!"
+  when:
+    - client is not defined
+
+- name: "HTH | Kitty | Validate management step input parameter"
+  ansible.builtin.fail:
+    msg: "Management step requires variable 'kitty_absolute_symlink_path' to be present!"
+  when:
+    - kitty_absolute_symlink_path is not defined
+
+- name: "HTH | Kitty | Validate management step input parameter"
+  ansible.builtin.fail:
+    msg: "Management step requires variable 'kitten_absolute_symlink_path' to be present!"
+  when:
+    - kitten_absolute_symlink_path is not defined
+
+- name: "HTH | Kitty | Validate management step input parameter"
+  ansible.builtin.fail:
+    msg: "Management step requires variable 'kitty_latest_version' to be present when installing latest version!"
+  when:
+    - kitty_latest_version is not defined
+    - client.version == 'latest'
+
+- name: "HTH | Kitty | Set client version"
+  ansible.builtin.set_fact:
+    kitty_client_version: "{{ kitty_latest_version if(client.version == 'latest') else client.version }}"
+
+- name: "HTH | Kitty | Set client version install path"
+  ansible.builtin.set_fact:
+    kitty_version_path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_client_version }}"
+
+- name: " HTH | Kitty | Lookup client version executable"
+  ansible.builtin.stat:
+    path:  "{{ kitty_version_path }}/bin/kitty"
+  register: kitty_version_executable
+
+- name: "HTH | Kitty | Download client"
+  ansible.builtin.include_tasks: download.yml
+  when:
+    - client.remove is not defined or not client.remove
+    - not kitty_version_executable.stat.exists
+
+- name: "HTH | Kitty | Remove client"
+  ansible.builtin.include_tasks: manage/remove.yml
+  when:
+    - client.remove is defined
+    - client.remove

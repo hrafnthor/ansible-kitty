@@ -1,0 +1,73 @@
+- name: "HTH | Kitty | Validate remove step input parameter"
+  ansible.builtin.fail:
+    msg: "Removal step requires variable 'kitty_absolute_symlink_path' to be present!"
+  when:
+    - kitty_absolute_symlink_path is not defined
+
+- name: "HTH | Kitty | Validate remove step input parameter"
+  ansible.builtin.fail:
+    msg: "Removal step requires variable 'kitten_absolute_symlink_path' to be present!"
+  when:
+    - kitten_absolute_symlink_path is not defined
+
+- name: "HTH | Kitty | Validate remove step input parameter"
+  ansible.builtin.fail:
+    msg: "Removal step requires variable 'kitty_desktop_entry_path' to be present!"
+  when:
+    - kitty_desktop_entry_path is not defined
+
+- name: "HTH | Kitty | Validate remove step input parameter"
+  ansible.builtin.fail:
+    msg: "Removal step requires variable 'kitty_version_path' to be present!"
+  when:
+    - kitty_version_path is not defined
+
+- name: "HTH | Kitty | Check for 'kitty' on path"
+  ansible.builtin.stat:
+    path: "{{ kitty_absolute_symlink_path }}"
+  register: kitty_path_state
+
+- name: "HTH | Kitty | Check 'kitty' version"
+  ansible.builtin.command: "{{ kitty_absolute_symlink_path }} --version"
+  register: kitty_path_version
+  when: kitty_path_state.stat.exists
+
+- name: "HTH | Kitty | Remove 'kitty' from path"
+  ansible.builtin.file:
+    path: "{{ kitty_absolute_symlink_path }}"
+    state: absent
+  when:
+    - kitty_path_state.stat.exists
+    - client.version | string in kitty_path_version.stdout
+
+- name: "HTH | Kitty | Remove 'kitty' desktop entry"
+  ansible.builtin.file:
+    path: "{{ kitty_desktop_entry_path }}"
+    state: absent
+  when:
+    - kitty_path_state.stat.exists
+    - client.version | string in kitty_path_version.stdout
+
+- name: "HTH | Kitty | Check for 'kitten' on path"
+  ansible.builtin.stat:
+    path: "{{ kitten_absolute_symlink_path }}"
+  register: kitten_path_state
+
+- name: "HTH | Kitty | Check 'kitten' version"
+  ansible.builtin.command: "{{ kitten_absolute_symlink_path }} --version"
+  register: kitten_path_version
+  when:
+    - kitten_path_state.stat.exists
+
+- name: "HTH | Kitty | Remove 'kitten' from path"
+  ansible.builtin.file:
+    path: "{{ kitten_absolute_symlink_path }}"
+    state: absent
+  when:
+    - kitten_path_state.stat.exists
+    - client.version | string in kitten_path_version.stdout
+
+- name: "HTH | Kitty | Remove version installation dir"
+  ansible.builtin.file:
+    path: "{{ kitty_version_path }}"
+    state: absent

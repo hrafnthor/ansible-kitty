@@ -6,6 +6,18 @@
   run_once: yes
   delegate_to: localhost
 
+- name: "HTH | Kitty | Set symlink 'kitty' path"
+  ansible.builtin.set_fact:
+    kitty_absolute_symlink_path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+
+- name: "HTH | Kitty | Set symlink 'kitten' path"
+  ansible.builtin.set_fact:
+    kitten_absolute_symlink_path: "{{ hth_default_kitty_linux_symlink_path }}/kitten"
+
+- name: "HTH | Kitty | Set desktop entry path"
+  ansible.builtin.set_fact:
+    kitty_desktop_entry_path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+
 - name: "HTH | Kitty | Map Linux architecture to artifact architecture"
   ansible.builtin.set_fact:
     kitty_architecture: >-
@@ -28,57 +40,28 @@
     - ansible_system == 'Linux'
     - kitty_architecture | length == 0
 
-- name: "HTH | Kitty | Fetch latest version number"
-  ansible.builtin.uri:
-    url: "{{ hth_default_kitty_latest_version_url }}"
-    return_content: yes
-  register: kitty_latest_version_result
-  when:
-    - kitty.remove is undefined or not kitty.remove
-    - (kitty.stable is defined and kitty.stable.version == 'latest') or (kitty.default is defined and kitty.default.version == 'latest')
-
-- name: "HTH | Kitty | Set latest version"
+- name: "HTH | Kitty | Find releases using 'latest' versions"
   ansible.builtin.set_fact:
-    kitty_latest_version: "{{ kitty_latest_version_result.content }}"
+    kitty_latest_clients: "{{ kitty.releases | selectattr('version', 'equalto', 'latest') | list }}"
   when:
-    - kitty.remove is undefined or not kitty.remove
-    - kitty_latest_version_result is defined
+    - kitty.releases is defined
 
-- name: "HTH | Kitty | Set stable version"
-  ansible.builtin.set_fact:
-    kitty_stable_version: "{{ kitty_latest_version if(kitty.stable.version == 'latest') else kitty.stable.version }}"
+- name: "HTH | Kitty | Fetch latest version"
+  ansible.builtin.include_tasks: latest.yml
   when:
-    - kitty.remove is undefined or not kitty.remove
-    - kitty.stable is defined
+    - kitty_latest_clients is defined
+    - (kitty_latest_clients | length > 0) or (kitty.default is defined and kitty.default.version == 'latest')
 
-- name: "HTH | Kitty | Download stable artifact"
-  ansible.builtin.include_tasks: download.yml
-  vars:
-    version: "{{ kitty_stable_version }}"
+- name: "HTH | Kitty | Manage releases"
+  ansible.builtin.include_tasks: manage/main.yml
+  loop: "{{ kitty.releases }}"
+  loop_control:
+    loop_var: client
   when:
-    - kitty.remove is undefined or not kitty.remove
-    - kitty.stable is defined
+    - kitty.releases is defined
 
-- name: "HTH | Kitty | Download nightly artifact"
-  ansible.builtin.include_tasks: download.yml
-  vars:
-    version: "nightly"
-
-  when:
-    - kitty.remove is undefined or not kitty.remove
-    - kitty.nightly is defined
-    - kitty.nightly
-
-- name: "HTH | Kitty | Trim versions"
+- name: "HTH | Kitty | Remove undefined versions"
   ansible.builtin.include_tasks: trim.yml
-  vars:
-    versions: >-
-      {{
-        [
-          ( kitty_stable_version if (kitty.stable is defined) | default(None)),
-          ('nightly' if (kitty.nightly | default(false)) else None)
-        ] | select('truthy') | list
-      }}
   when:
     - kitty.remove is undefined or not kitty.remove
     - ansible_system == 'Linux'
@@ -87,8 +70,6 @@
 
 - name: "HTH | Kitty | Set default version"
   ansible.builtin.include_tasks: default.yml
-  vars:
-    version: "{{ 'nightly' if (kitty.default.version == 'nightly') else kitty_latest_version if (kitty.default.version == 'latest') else kitty.default.version }}"
   when:
     - kitty.remove is undefined or not kitty.remove
     - ansible_system == 'Linux'
