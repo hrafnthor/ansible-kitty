@@ -49,9 +49,6 @@ All parameters are optional unless otherwise stated.
 kitty:
   remove:       [bool]    Indicates that every version, path addition and desktop entry should be removed.
   trim:         [bool]    Indicates that any versions that don't match either 'nightly' (if requested to be present) or the configured 'stable' version, should be removed. Defaults to false.
-  nightly:      [bool]    Indicates that the nightly version should be downloaded. Defaults to false.
-  stable:
-    version:    [string]  [required] The version number to download. If set to 'latest', then the role will reach out and fetch the latest version number online. See details below.
   default:
     remove:     [bool]    If true will remove the version from the path as well as removing any desktop entry that may exist.
     version:    [string]  [required] The version number to add to path. Can be any value but will fail if the subsequent directory matching this value is not found. Setting it to 'nightly' will attempt to link to the nightly version, while 'latest' will attempt to link to the latest version.
@@ -59,6 +56,10 @@ kitty:
       remove:   [bool]    If true will remove any current desktop entry and not create a new one. Defaults to false.
       force:    [bool]    Indicates if a new desktop entry should be created if a prior one already exists. Icon paths and keywords will still be changed if needed.
       keywords: [array]   List of keywords to add to the desktop entry, making it searchable by them.
+  releases:
+    - version:  [string]  [required] The version code to install
+      checksum: [string]  Optional checksum for the archive.
+      remove:   [boolean] Indicates if the version should be removed or not.
 ```
 
 #### Default variables
