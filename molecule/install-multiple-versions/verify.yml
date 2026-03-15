@@ -1,0 +1,70 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+
+  - name: Load role input variables
+    include_vars:
+      file: "input-vars.yml"
+
+  - name: Load role defaults
+    include_vars:
+      file: "../../defaults/main.yml"
+
+  - name: Extract first version from input data
+    set_fact:
+      kitty_first_version: "{{ kitty.releases | map(attribute='version') | first }}"
+
+  - name: Extract second version from input data
+    set_fact:
+      kitty_second_version: "{{ kitty.releases | map(attribute='version') | last }}"
+
+  - name: Check for first version install dir presence
+    stat:
+      path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_first_version }}/bin/kitty"
+    register: kitty_first_version_dir_stat
+
+  - name: Check for second version install dir presence
+    stat:
+      path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_second_version }}/bin/kitty"
+    register: kitty_second_version_dir_stat
+
+  - name: Check for kitty symlink presence
+    stat:
+      path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+    register: kitty_symlink_stat
+
+  - name: Check for kitten symlink presence
+    stat:
+      path: "{{ hth_default_kitty_linux_symlink_path }}/kitten"
+    register: kitty_kitten_symlink_stat
+
+  - name: Check for desktop file presence
+    stat:
+      path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    register: kitty_desktop_stat
+
+  - name: Fail when first version install path is not found
+    fail:
+      msg: "Install directory for version '{{ kitty_first_version }}' was not found!"
+    when: not kitty_first_version_dir_stat.stat.exists
+
+  - name: Fail when second version install path is not found
+    fail:
+      msg: "Install directory for version '{{ kitty_second_version }}' was not found!"
+    when: not kitty_second_version_dir_stat.stat.exists
+
+  - name: Fail when kitty is not found on path
+    fail:
+      msg: "Version '{{ kitty_version }}' of kitty was not found on path!"
+    when: not kitty_symlink_stat.stat.exists
+
+  - name: Fail when kitten is not found on path
+    fail:
+      msg: "Version '{{ kitty_version }}' of kitten was not found on path!"
+    when: not kitty_kitten_symlink_stat.stat.exists
+
+  - name: Fail when desktop entry is not found
+    fail:
+      msg: "Desktop entry not found for version!"
+    when: not kitty_desktop_stat.stat.exists

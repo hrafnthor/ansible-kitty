@@ -1,0 +1,11 @@
+kitty:
+  releases:
+    - version: "0.43.0"
+  default:
+    version: "0.43.0"
+    desktop:
+      keywords:
+        - tty
+        - shell
+        - terminal
+        - emulator
