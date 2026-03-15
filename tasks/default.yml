@@ -1,27 +1,54 @@
-- name: "HTH | Kitty | Set default version executable path"
-  ansible.builtin.set_fact:
-    kitty_default_version_path: "{{ hth_default_kitty_linux_installation_path }}/{{ version }}"
-
-- name: "HTH | Kitty | Set default version executable path"
-  ansible.builtin.set_fact:
-    kitty_default_version_executable_path: "{{ kitty_default_version_path }}/bin/kitty"
-
-- name: "HTH | Kitty | Stat default version executable"
-  ansible.builtin.stat:
-    path:  "{{ kitty_default_version_executable_path }}"
-  register: kitty_default_version_executable
-
-- name: "HTH | Kitty | Assert version executable exists"
+- name: "HTH | Kitty | Validate default configuration step input parameter"
   ansible.builtin.fail:
-    msg: "Was unable to find executable at '{{ kitty_default_version_executable_path }}'!"
+    msg: "Default client configuration step requires variable 'kitty_latest_version' to be present when version is set to 'latest'!"
+  when:
+    - kitty.default.version == 'latest'
+    - kitty_latest_version is not defined
+
+- name: "HTH | Kitty | Set client version"
+  ansible.builtin.set_fact:
+    kitty_client_default_version: "{{ kitty_latest_version if(kitty.default.version == 'latest') else kitty.default.version }}"
+
+- name: "HTH | Kitty | Set default version executable path"
+  ansible.builtin.set_fact:
+    kitty_client_default_version_path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_client_default_version }}"
+
+- name: "HTH | Kitty | Set default 'kitty' version executable path"
+  ansible.builtin.set_fact:
+    kitty_client_default_version_executable_path: "{{ kitty_client_default_version_path }}/bin/kitty"
+
+- name: "HTH | Kitty | Stat default 'kitty' version executable"
+  ansible.builtin.stat:
+    path:  "{{ kitty_client_default_version_executable_path }}"
+  register: kitty_client_default_version_executable
+
+- name: "HTH | Kitty | Assert 'kitten' version executable exists"
+  ansible.builtin.fail:
+    msg: "Was unable to find executable at '{{ kitty_client_default_version_executable }}'!"
   when:
     - kitty.default.remove is undefined or not kitty.default.remove
-    - not kitty_default_version_executable.stat.exists
+    - not kitty_client_default_version_executable.stat.exists
 
-- name: "HTH | Kitty | Add version to path"
+- name: "HTH | Kitty | Set default 'kitten' version executable path"
+  ansible.builtin.set_fact:
+    kitten_client_default_version_executable_path: "{{ kitty_client_default_version_path }}/bin/kitten"
+
+- name: "HTH | Kitty | Stat default 'kitten' version executable"
+  ansible.builtin.stat:
+    path:  "{{ kitten_client_default_version_executable_path }}"
+  register: kitten_client_default_version_executable
+
+- name: "HTH | Kitty | Assert 'kitten' version executable exists"
+  ansible.builtin.fail:
+    msg: "Was unable to find executable at '{{ kitten_client_default_version_executable }}'!"
+  when:
+    - kitty.default.remove is undefined or not kitty.default.remove
+    - not kitten_client_default_version_executable.stat.exists
+
+- name: "HTH | Kitty | Add 'kitty' version to path"
   ansible.builtin.file:
-    src: "{{ kitty_default_version_executable_path }}"
-    dest: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+    src: "{{ kitty_client_default_version_executable_path }}"
+    dest: "{{ kitty_absolute_symlink_path }}"
     owner: "{{ hth_kitty_default_linux_desktop_entry_group }}"
     group: "{{ hth_kitty_default_linux_symlink_path_group }}"
     mode: 0755
@@ -29,21 +56,40 @@
   when:
     - kitty.default.remove is undefined or not kitty.default.remove
 
-- name: "HTH | Kitty | Remove version from path"
+- name: "HTH | Kitty | Add 'kitten' version to path"
   ansible.builtin.file:
-    path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
-    state: absent
-  when:
-    - kitty.default.remove is defined
-    - kitty.default.remove
-
-- name: "HTH | Kitty | Set desktop entry path"
-  ansible.builtin.set_fact:
-    kitty_desktop_entry_path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    src: "{{ kitten_client_default_version_executable_path }}"
+    dest: "{{ kitten_absolute_symlink_path }}"
+    owner: "{{ hth_kitty_default_linux_desktop_entry_group }}"
+    group: "{{ hth_kitty_default_linux_symlink_path_group }}"
+    mode: 0755
+    state: link
   when:
     - kitty.default.remove is undefined or not kitty.default.remove
-    - kitty.default.desktop is defined
-    - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
+
+# - name: "HTH | Kitty | Remove current default 'kitty' version from path"
+#   ansible.builtin.file:
+#     path: "{{ hth_default_kitty_linux_symlink_path }}/kitty"
+#     state: absent
+#   when:
+#     - kitty.default.remove is defined
+#     - kitty.default.remove
+
+# - name: "HTH | Kitty | Remove current default 'kitten' version from path"
+#   ansible.builtin.file:
+#     path: "{{ hth_default_kitty_linux_symlink_path }}/kitten"
+#     state: absent
+#   when:
+#     - kitty.default.remove is defined
+#     - kitty.default.remove
+
+# - name: "HTH | Kitty | Set desktop entry path"
+#   ansible.builtin.set_fact:
+#     kitty_desktop_entry_path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+#   when:
+#     - kitty.default.remove is undefined or not kitty.default.remove
+#     - kitty.default.desktop is defined
+#     - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
 
 - name: "HTH | Kitty | Stat desktop entry"
   ansible.builtin.stat:
@@ -56,11 +102,12 @@
 
 - name: "HTH | Kitty | Add desktop entry"
   ansible.builtin.copy:
-    src: "{{ kitty_default_version_path }}/share/applications/kitty.desktop"
-    dest: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    src: "{{ kitty_client_default_version_path }}/share/applications/kitty.desktop"
+    dest: "{{ kitty_desktop_entry_path }}"
     owner: "{{ hth_kitty_default_linux_desktop_entry_owner }}"
     group: "{{ hth_kitty_default_linux_desktop_entry_group }}"
     mode: 0644
+    remote_src: true
   register: kitty_desktop
   when:
     - kitty.default.remove is undefined or not kitty.default.remove
@@ -70,9 +117,9 @@
 
 - name: "HTH | Kitty | Set desktop entry icon"
   ansible.builtin.lineinfile:
-    path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    path: "{{ kitty_desktop_entry_path }}"
     regexp: "^Icon="
-    line: "Icon={{ kitty_default_version_path }}/share/icons/hicolor/scalable/apps/kitty.svg"
+    line: "Icon={{ kitty_client_default_version_path }}/share/icons/hicolor/scalable/apps/kitty.svg"
   register: kitty_desktop_icon
   when:
     - kitty.default.remove is undefined or not kitty.default.remove
@@ -81,7 +128,7 @@
 
 - name: "HTH | Kitty | Set desktop entry keywords"
   ansible.builtin.lineinfile:
-    path:  "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    path:  "{{ kitty_desktop_entry_path }}"
     regexp: "^Keywords="
     line: "Keywords={{ kitty.default.desktop.keywords | join(';') }}"
   register: kitty_desktop_keywords
@@ -91,18 +138,29 @@
     - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
     - kitty.default.desktop.keywords is defined
 
+- name: "HTH | Kitty | Check for validation program"
+  command: which desktop-file-validate
+  register: kitty_desktop_file_validate
+  failed_when: false
+  changed_when: false
+
 - name: "HTH | Kitty | Validate desktop entry"
   ansible.builtin.shell:
-    cmd: "desktop-file-validate {{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    cmd: "desktop-file-validate {{ kitty_desktop_entry_path }}"
   when:
     - kitty.default.remove is undefined or not kitty.default.remove
     - kitty.default.desktop is defined
     - kitty.default.desktop.remove is undefined or not kitty.default.desktop.remove
     - kitty_desktop.changed or kitty_desktop_icon.changed or kitty_desktop_keywords.changed
+    - kitty_desktop_file_validate.rc == 0
+
+- ansible.builtin.debug:
+    msg: "Skipping desktop file validation — desktop-file-validate not found"
+  when: kitty_desktop_file_validate.rc != 0
 
 - name: "HTH | Kitty | Remove desktop entry"
   ansible.builtin.file:
-    path: "{{ hth_default_kitty_linux_desktop_entry_path }}/kitty.desktop"
+    path: "{{ kitty_desktop_entry_path }}"
     state: absent
   when:
     - (kitty.default.remove is defined and kitty.default.remove) or (kitty.default.desktop is defined and kitty.default.desktop.remove is defined and kitty.default.desktop.remove)

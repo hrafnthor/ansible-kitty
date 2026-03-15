@@ -1,0 +1,73 @@
+- name: "HTH | Kitty | Validate download step input parameter"
+  ansible.builtin.fail:
+    msg: "Download step requires variable 'client' to be present!"
+  when:
+    - client is not defined
+
+- name: "HTH | Kitty | Validate download step input parameter"
+  ansible.builtin.fail:
+    msg: "Download step requires variable 'kitty_client_version' to be present!"
+  when:
+    - kitty_client_version is not defined
+
+- name: "HTH | Kitty | Validate download step input parameter"
+  ansible.builtin.fail:
+    msg: "Download step requires variable 'kitty_version_executable' to be present!"
+  when:
+    - kitty_version_executable is not defined
+
+- name: "HTH | Kitty | Validate download step input parameter"
+  ansible.builtin.fail:
+    msg: "Download step requires variable 'kitty_architecture' to be present!"
+  when:
+    - kitty_architecture is not defined
+
+- name: "HTH | Kitty | Set client branch"
+  ansible.builtin.set_fact:
+    kitty_client_branch: "{{ 'nightly' if(kitty_client_version == 'nightly') else 'v' + kitty_client_version }}"
+
+- name: "HTH | Kitty | Set client version install path"
+  ansible.builtin.set_fact:
+    kitty_version_path: "{{ hth_default_kitty_linux_installation_path }}/{{ kitty_client_version }}"
+
+- name: "HTH | Kitty | Set artifact format"
+  ansible.builtin.set_fact:
+    kitty_artifact_ending: "{{ 'txz' if(ansible_system == 'Linux') else 'dmg' }}"
+
+- name: "HTH | Kitty | Set version archive name"
+  ansible.builtin.set_fact:
+    kitty_archive_name: "kitty-{{ kitty_client_version }}{{ '-' + kitty_architecture if(kitty_architecture | length > 0) else '' }}.{{ kitty_artifact_ending }}"
+  when:
+    - not kitty_version_executable.stat.exists
+
+- name: "HTH | Kitty | Set version archive download path"
+  ansible.builtin.set_fact:
+    kitty_archive_download_path: "/tmp/{{ kitty_archive_name }}"
+  when:
+    - not kitty_version_executable.stat.exists
+
+- block:
+
+  - name: "HTH | Kitty | Download version archive"
+    ansible.builtin.get_url:
+      url: "https://github.com/kovidgoyal/kitty/releases/download/{{ kitty_client_branch }}/{{ kitty_archive_name }}"
+      dest: "{{ kitty_archive_download_path }}"
+      checksum: "{{ client.checksum | default(omit) }}"
+    register: archive_download_state
+    when:
+      - not kitty_version_executable.stat.exists
+
+  - name: "HTH | Kitty | Extract version archive"
+    ansible.builtin.include_tasks: extract/main.yml
+    when:
+      - not kitty_version_executable.stat.exists
+
+  always:
+
+    - name: "HTH | Kitty | Cleanup temporary files"
+      ansible.builtin.file:
+        path: "{{ kitty_archive_download_path }}"
+        state: absent
+      when:
+        - archive_download_state is defined
+        - archive_download_state.changed

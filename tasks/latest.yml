@@ -1,0 +1,9 @@
+- name: "HTH | Kitty | Fetch latest version number"
+  ansible.builtin.uri:
+    url: "{{ hth_default_kitty_latest_version_url }}"
+    return_content: yes
+  register: kitty_latest_version_result
+
+- name: "HTH | Kitty | Set latest version"
+  ansible.builtin.set_fact:
+    kitty_latest_version: "{{ kitty_latest_version_result.content }}"

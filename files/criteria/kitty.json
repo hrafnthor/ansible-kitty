@@ -26,7 +26,7 @@
                 },
                 "version":
                 {
-                    "description": "Indicates which version should be default and added to path",
+                    "description": "Indicates which version should be default and added to path. Can be set to 'latest' or 'nightly'.",
                     "$ref": "#/definitions/non-empty-string"
                 },
                 "desktop":
@@ -58,23 +58,37 @@
                 "version"
             ]
         },
-        "stable":
+        "releases":
         {
-            "description": "The stable release version of Kitty to install",
-            "type": "object",
-            "properties":
+            "description": "A list of releases that should be managed",
+            "type": "array",
+            "items":
             {
-                "version":
+                "description": "An object describing the version that should be managed",
+                "type": "object",
+                "properties":
                 {
-                    "$ref": "#/definitions/non-empty-string"
-                }
-            },
-            "required": ["version"]
-        },
-        "nightly":
-        {
-            "description": "Indicates that the latest nightly version should be installed",
-            "type": "boolean"
+                    "version":
+                    {
+                        "description": "The version to install, or can be set to 'latest' or 'nightly'",
+                        "$ref": "#/definitions/non-empty-string"
+                    },
+                    "checksum":
+                    {
+                        "description": "The optional checksum for the artifact. In cases such as when 'version' is set to 'latest' then this value can be omitted. Otherwise it is advised to use a artifact checksum.",
+                        "$ref": "#/definitions/non-empty-string"
+                    },
+                    "remove":
+                    {
+                        "description": "Indicates if this version should be removed",
+                        "type": "boolean"
+                    }
+                },
+                "required":
+                [
+                    "version"
+                ]
+            }
         }
     },
     "definitions":
