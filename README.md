@@ -57,7 +57,7 @@ kitty:
       force:    [bool]    Indicates if a new desktop entry should be created if a prior one already exists. Icon paths and keywords will still be changed if needed.
       keywords: [array]   List of keywords to add to the desktop entry, making it searchable by them.
   releases:
-    - version:  [string]  [required] The version code to install
+    - version:  [string]  [required] The version code to install. Can be set to "latest" or "nightly" to install the relevant versions.
       checksum: [string]  Optional checksum for the archive.
       remove:   [boolean] Indicates if the version should be removed or not.
 ```
@@ -150,56 +150,22 @@ Defaults to `x86_64: ["x86_64", "amd64"]`
 
 #### Example
 
-The following example fetches the latest stable version and the nightly version, trims any other versions that might exist afterwards and adds the nightly version to the path as well as creating a desktop entry for kitty.
+The following example fetches the latest and nightly versions plus version 0.43.0, trims any other versions that might exist afterwards and adds the nightly version to the path as well as creating a desktop entry for kitty.
 
 ```yaml
 - hosts: all
   vars:
     kitty:
       trim: true
-      nightly: true
-      stable:
-        version: latest
+      releases:
+        - version: "latest"
+        - version: "nightly"
+        - version: "0.43.0"
       default:
         version: nightly
         desktop:
           keywords:
             - nightly
-  roles:
-    - hth-kitty
-```
-
-This configuration also fetches the nightly and latest stable versions, trims any stragglers but adds the latest stable version to the path and forcefully adds a desktop entry for kitty.
-
-```yaml
-- hosts: all
-  vars:
-    kitty:
-      trim: true
-      nightly: true
-      stable:
-        version: "latest"
-      default:
-        version: "latest"
-        desktop:
-          force: true
-          keywords:
-            - kitty-latest
-  roles:
-    - hth-kitty
-```
-
-This configuration skips fetching the nightly version, fetches stable version "0.43.0" and adds that version to the path. No desktop entry is created.
-
-```yaml
-- hosts: all
-  vars:
-    kitty:
-      trim: true
-      stable:
-        version: "0.43.0"
-      default:
-        version: "0.43.0"
   roles:
     - hth-kitty
 ```
