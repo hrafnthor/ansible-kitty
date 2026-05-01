@@ -10,9 +10,6 @@ hth_default_kitty_linux_symlink_path: "/usr/bin"
 # The default location where a desktop entry will be added
 hth_default_kitty_linux_desktop_entry_path: "/usr/share/applications"
 
-# The owner of the default version symlink
-hth_kitty_default_linux_desktop_entry_group: "root"
-
 # the group owner of the default version symlink
 hth_kitty_default_linux_symlink_path_group: "root"
 
